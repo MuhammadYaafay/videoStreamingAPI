@@ -179,4 +179,18 @@ router.get("/:id", checkAuth, async (req, res) => {
   }
 });
 
+router.get("/category/:category", async (req, res) => {
+  try {
+    const videos = await Video.find({
+      category: req.params.category,
+    }).sort({ createdAt: -1 });
+    res.status(200).json(videos);
+  } catch (error) {
+    console.log(error);
+    res
+      .status(500)
+      .json({ error: "Error fetching videos", message: error.message });
+  }
+});
+
 export default router;
