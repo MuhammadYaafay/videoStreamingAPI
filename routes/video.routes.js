@@ -193,4 +193,20 @@ router.get("/category/:category", async (req, res) => {
   }
 });
 
+router.get("/tags/:tag", async (req, res) => {
+  try {
+    const tag = req.params.tag;
+    const videos = await Video.find({
+      tags: tag,
+    }).sort({ createdAt: -1 });
+
+    res.status(200).json(videos);
+  } catch (error) {
+    console.log(error);
+    res
+      .status(500)
+      .json({ error: "Error fetching videos", message: error.message });
+  }
+});
+
 export default router;
