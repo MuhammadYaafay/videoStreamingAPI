@@ -46,4 +46,40 @@ router.post("/upload", checkAuth, async (req, res) => {
     }
 })
 
+router.put("/update/:id", checkAuth, async (req, res) => {
+    try {
+        const { title, description, category, tags } = req.body;
+        const videoId = req.params.id;
+
+        let video = await Video.findById(videoId);
+        if (!video) {
+            res.status(404).json({ error: "Videos not found" })
+        }
+
+        if (video.user_id.toString() !== req.user._id.toString()) {
+            return res.status(403).json({ error: "unauthorized" })
+        }
+        if (req.files && req.files.thumbnail) {
+            await cloudinary.uploader.destroy(video.thumbnailId);
+            const thumbnailUpload = await cloudinary.uploader.upload(req.files.thumbnail.tempFilePath, {
+                folder: "thumbnails",
+            })
+
+            video.thumbnailUrl = thumbnailUpload.secure_url;
+            video.thumbnailId = thumbnailUpload.public_id;
+        }
+        video.title = title || video.title;
+        video.description = description || video.description;
+        video.category = category || video.category;
+        video.tags = tags ? tags.split(",") : video.tags;
+
+        await video.save();
+        res.status(200).json({ message: "Video updated successfully", video })
+        
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ error: "Error updating video", message: error.message })
+    }
+})
+
 export default router; 
