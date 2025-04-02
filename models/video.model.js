@@ -66,23 +66,5 @@ const videoSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
-// Virtual fields for likes, dislikes, and views
-videoSchema.virtual("likes").get(function () {
-    return this.likedBy.length;
-});
-
-videoSchema.virtual("dislikes").get(function () {
-    return this.disLikedBy.length;
-});
-
-videoSchema.virtual("views").get(function () {
-    return this.viewedBy.length;
-});
-
-// Ensure virtual fields are included in JSON output
-videoSchema.set("toJSON", {
-    virtuals: true,
-});
-
 const videoModel = mongoose.model("Video", videoSchema);
 export default videoModel;
