@@ -209,4 +209,40 @@ router.get("/tags/:tag", async (req, res) => {
   }
 });
 
+router.post("/like", checkAuth, async (req, res) => {
+  try {
+    const { videoId } = req.body;
+    const userId = req.user._id;
+
+    await Video.findByIdAndUpdate(videoId, {
+      $addToSet: { likedBy: userId },
+      $pull: { disLikedBy: userId }, // Remove from dislikes if previously disliked
+    });
+    res.status(200).json({ message: "Video liked" });
+  } catch (error) {
+    console.log(error);
+    res
+      .status(500)
+      .json({ error: "Error liking video", message: error.message });
+  }
+});
+
+router.post("/dislike", checkAuth, async (req, res) => {
+  try {
+    const { videoId } = req.body;
+    const userId = req.user._id;
+
+    await Video.findByIdAndUpdate(videoId, {
+      $addToSet: { disLikedBy: userId },
+      $pull: { likedBy: userId }, // Remove from likes if previously liked
+    });
+    res.status(200).json({ message: "Video disliked" });
+  } catch (error) {
+    console.log(error);
+    res
+      .status(500)
+      .json({ error: "Error disliking video", message: error.message });
+  }
+});
+
 export default router;
