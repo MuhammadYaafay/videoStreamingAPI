@@ -50,6 +50,28 @@ router.delete("/:commentId", checkAuth, async (req, res) => {
   }
 });
 
+router.put("/:commentId", checkAuth, async (req, res) => {
+  try {
+    const { commentId } = req.params;
+    const { commentText } = req.body;
 
+    const comment = await Comment.findById(commentId);
+
+    if (!comment) {
+      return res.status(404).json({ message: "Comment not found" });
+    }
+    if (comment.user_id.toString() !== req.user._id) {
+      return res
+        .status(403)
+        .json({ message: "You are not authorized to edit this comment" });
+    }
+    comment.commentText = commentText;
+    await comment.save();
+    res.status(200).json({ message: "Comment updated successfully", comment });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Failed to update comment" });
+  }
+});
 
 export default router;
