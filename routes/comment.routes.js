@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 
 import { checkAuth } from "../middleware/auth.middleware.js";
 import Comment from "../models/comment.model.js";
+import Video from "../models/video.model.js";
 
 const router = express.Router();
 
@@ -71,6 +72,27 @@ router.put("/:commentId", checkAuth, async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Failed to update comment" });
+  }
+});
+
+router.get("/:videoId", checkAuth, async (req, res) => {
+  try {
+    const { videoId } = req.params;
+    const video = await Video.findById(videoId);
+    if (!video) {
+      return res.status(404).json({ message: "Video not found" });
+    }
+    const comments = await Comment.find(
+        {video_id: videoId}
+    ).populate("user_id", "channelName logoUrl").sort({createdAt: -1});
+
+    if (!comments) {
+      return res.status(404).json({ message: "No comments found" });
+    }
+    res.status(200).json({ comments });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Failed to get comments" });
   }
 });
 
